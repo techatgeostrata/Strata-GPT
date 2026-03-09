@@ -142,15 +142,21 @@ RULES:
   // 6. Return the stream with Supabase Logging (Flight Recorder)
   const stream = OpenAIStream(response as any, {
     async onCompletion(completion) {
-      // THIS RUNS AFTER THE AI FINISHES STREAMING THE ANSWER
-      await supabase.from('chat_logs').insert({
+      console.log(`[LOGGING] Attempting to save chat to Supabase...`);
+      
+      const { error: logError } = await supabase.from('chat_logs').insert({
         user_ip: ip,
         user_query: lastMessage,
         ai_response: completion,
         optimized_query: optimizedQuery,
         source_count: documents?.length || 0
       });
-      console.log(`✅ Logged interaction for IP: ${ip}`);
+
+      if (logError) {
+        console.error("❌ SUPABASE LOG ERROR:", logError);
+      } else {
+        console.log(`✅ Successfully logged interaction for IP: ${ip}`);
+      }
     },
   });
 
