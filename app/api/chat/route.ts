@@ -111,6 +111,6 @@ RULES:
   });
 
   // 6. Return the stream
-  const stream = OpenAIStream(response);
+  const stream = OpenAIStream(response as any);
   return new StreamingTextResponse(stream);
 }
