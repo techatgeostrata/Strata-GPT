@@ -1,6 +1,21 @@
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
+import { Redis } from '@upstash/redis';
+import { Ratelimit } from '@upstash/ratelimit';
+
+// 1. Initialize Upstash Redis Rate Limiter
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+// Create a rate limiter that allows 5 requests per 1 minute per IP address
+const ratelimit = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(5, "1 m"),
+  analytics: true,
+});
 
 // Initialize OpenAI & Supabase
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -12,6 +27,24 @@ const supabase = createClient(
 export const runtime = 'edge';
 
 export async function POST(req: Request) {
+  // ==========================================
+  // SECURITY CHECK: RATE LIMITING
+  // ==========================================
+  const ip = req.headers.get('x-forwarded-for') ?? '127.0.0.1';
+  
+  const { success } = await ratelimit.limit(ip);
+
+  if (!success) {
+    console.log(`🚨 RATE LIMIT EXCEEDED FOR IP: ${ip}`);
+    return new Response(
+      "Whoa there! You are asking questions too quickly. Please wait a minute and try again.", 
+      { status: 429 }
+    );
+  }
+
+  // ==========================================
+  // NORMAL AI EXECUTION BELOW
+  // ==========================================
   const { messages } = await req.json();
   const lastMessage = messages[messages.length - 1].content;
 
@@ -28,7 +61,7 @@ export async function POST(req: Request) {
   });
   
   const optimizedQuery = searchOptimization.choices[0].message.content || lastMessage;
-  console.log("🔍 Optimized Search Query:", optimizedQuery);
+  console.log(`[IP: ${ip}] 🔍 Optimized Search Query:`, optimizedQuery);
 
   // 2. Embed the OPTIMIZED query
   const embeddingResponse = await openai.embeddings.create({
@@ -45,7 +78,7 @@ export async function POST(req: Request) {
 
   if (error) console.error("Database Search Error:", error);
 
-  // 🚀 DEBUG LOG: See exactly what Supabase found in your terminal
+  // 🚀 DEBUG LOG
   console.log("--- DATABASE RETURNED ---");
   documents?.forEach((doc: any, i: number) => {
     console.log(`Result ${i + 1}: ${doc.metadata.title} (Type: ${doc.metadata.type})`);
@@ -56,9 +89,7 @@ export async function POST(req: Request) {
   let systemPrompt = '';
 
   if (documents && documents.length > 0) {
-    // ==========================================
     // PATH A: WE FOUND GEOSTRATA DATA
-    // ==========================================
     let contextText = '';
     documents.forEach((doc: any, i: number) => {
       contextText += `\n[Source ${i + 1}] Type: ${doc.metadata.type} | Title: ${doc.metadata.title} | URL: ${doc.metadata.url}\nContent: ${doc.content}\n`;
@@ -85,9 +116,7 @@ STRICT PRODUCTION RULES:
    - For Videos: If the source 'Type' is 'video' or the 'URL' contains 'youtube.com', you MUST provide the exact raw youtube.com URL (e.g., https://www.youtube.com/watch?v=...). Do NOT change it to a thegeostrata.com link. The frontend strictly requires the raw 'youtube.com' URL to trigger the video player UI.
 `;
   } else {
-    // ==========================================
     // PATH B: NO DATA FOUND -> USE GENERAL LLM
-    // ==========================================
     systemPrompt = `
 You are STRATA GPT, the flagship AI for The Geostrata think tank.
 The user asked a question that is NOT covered in your internal archives.
@@ -100,7 +129,7 @@ RULES:
 `;
   }
 
-  // 5. Generate and Stream the Response
+  // 5. Generate Response
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     stream: true,
@@ -110,7 +139,20 @@ RULES:
     ],
   });
 
-  // 6. Return the stream
-  const stream = OpenAIStream(response as any);
+  // 6. Return the stream with Supabase Logging (Flight Recorder)
+  const stream = OpenAIStream(response as any, {
+    async onCompletion(completion) {
+      // THIS RUNS AFTER THE AI FINISHES STREAMING THE ANSWER
+      await supabase.from('chat_logs').insert({
+        user_ip: ip,
+        user_query: lastMessage,
+        ai_response: completion,
+        optimized_query: optimizedQuery,
+        source_count: documents?.length || 0
+      });
+      console.log(`✅ Logged interaction for IP: ${ip}`);
+    },
+  });
+
   return new StreamingTextResponse(stream);
 }
