@@ -1,0 +1,8 @@
+openai
+supabase
+python-dotenv
+youtube-transcript-api
+requests
+beautifulsoup4
+playwright
+scrapetube
