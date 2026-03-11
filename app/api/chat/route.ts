@@ -109,7 +109,7 @@ ${contextText}
 STRICT PRODUCTION RULES:
 1. EXACT DETAILS: If the context contains specific numbers, statistics, or facts (e.g., "200+ members", specific names, universities like IIT/IIM, dates), you MUST extract and use them. Do not give vague summaries if the specific data is right there.
 2. NO HALLUCINATION: Answer using ONLY the provided context. If the context does not contain the answer, explicitly state: "I do not have that specific information in my current archives." Do not invent or assume details.
-3. INLINE CITATIONS: Cite your sources inline using brackets corresponding to the source number, e.g., [1] or [2].
+3. INLINE CITATIONS: You MUST cite your sources using Markdown links exactly like this: [Title of Source](URL). Do not use plain numbered footnotes like [1] or [2].
 4. SMART REFERENCES: You MUST append a "### References" section at the end of your response, BUT ONLY list the sources you actually used to formulate your answer. Do NOT just dump all provided context links.
 5. URL FORMATTING (CRITICAL):
    - For Text Articles/Private Docs: Format as a clickable markdown link: [Title](URL)
