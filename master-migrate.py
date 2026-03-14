@@ -163,6 +163,7 @@ async def main():
     # 1. Grab ALL links instantly via the backdoor
     all_target_urls = get_all_urls_from_sitemap()
     all_target_urls.append("https://www.thegeostrata.com/geointerview")
+    all_target_urls.append("https://www.thegeostrata.com/aboutus")
     
     # Clean up duplicates
     all_target_urls = list(set(all_target_urls))

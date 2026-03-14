@@ -2,7 +2,7 @@
 
 import { useChat } from 'ai/react'; 
 import { useEffect, useRef, useState, memo } from 'react';
-import { ArrowUp, Sparkles, Loader2, Link as LinkIcon, Youtube, BookOpen } from 'lucide-react';
+import { ArrowUp, Sparkles, Loader2, Link as LinkIcon, Youtube, BookOpen, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,7 +27,7 @@ const YouTubePlayer = memo(({ videoId }: { videoId: string }) => {
 YouTubePlayer.displayName = "YouTubePlayer";
 
 export default function Home() {
-  const { messages, append, isLoading } = useChat();
+  const { messages, append, isLoading, error } = useChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [localInput, setLocalInput] = useState('');
 
@@ -36,7 +36,7 @@ export default function Home() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading, error]); // Added error to dependency array so it scrolls when error appears
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,6 +189,19 @@ export default function Home() {
                 </div>
               </motion.div>
             )}
+
+            {/* Rate Limit / Error State */}
+            {error && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-5 w-full relative mt-4">
+                <div className="w-7 h-7 flex-shrink-0 mt-1.5 rounded-md bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 flex items-center justify-center relative z-10 shadow-sm">
+                   <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                </div>
+                <div className="flex-1 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 px-6 py-4 rounded-3xl rounded-tl-sm text-[15px] leading-relaxed text-red-900 dark:text-red-200 shadow-sm">
+                  {error.message || "An error occurred. Please try again."}
+                </div>
+              </motion.div>
+            )}
+            
           </div>
         </div>
       </div>
