@@ -24,9 +24,17 @@ const openai = new OpenAI({
   maxRetries: 1,
 });
 
+// Standard client — for vector search (anon key)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// Admin client — for saving messages server-side, bypasses RLS
+// CHANGE 1: Added supabaseAdmin using service role key
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export const runtime = 'edge';
@@ -42,9 +50,6 @@ const ARTICLE_CACHE_TTL = 120; // 2 minutes
 // HARDCODED FACTS
 // ─────────────────────────────────────────────
 const HARDCODED_FACTS = {
-  // FIX: Removed follower counts from Twitter/YouTube (unverified).
-  // Only Instagram (174K+) and LinkedIn (4,383+) are confirmed.
-  // Added explicit note so model never invents follower counts for other platforms.
   socialHandles: `
 The Geostrata's complete verified social media and web presence — present ALL of these when asked for links, handles, or social media:
 
@@ -249,15 +254,11 @@ DATABASE QUERY RULES:
 
 // ─────────────────────────────────────────────
 // ARTICLE FETCHING
-// Primary:  Direct HTML scrape (always freshest)
-// Fallback: 4 parallel Tavily queries
-// Cache:    Redis 2-min TTL
 // ─────────────────────────────────────────────
 function parseArticlesFromHtml(html: string): Article[] {
   const articles: Article[] = [];
   const seenPaths = new Set<string>();
 
-  // Strategy A: JSON-LD BlogPosting schema
   const jsonLdMatches = [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)];
   for (const match of jsonLdMatches) {
     try {
@@ -284,7 +285,6 @@ function parseArticlesFromHtml(html: string): Article[] {
     } catch { /* continue */ }
   }
 
-  // Strategy B: /post/ hrefs with nearby title extraction
   const hrefMatches = [...html.matchAll(/href="((?:https?:\/\/(?:www\.)?thegeostrata\.com)?\/post\/[^"?#]+)"/gi)];
   for (const match of hrefMatches) {
     let rawUrl = match[1];
@@ -658,10 +658,16 @@ export async function POST(req: Request) {
   }
 
   // ── Parse & Validate ────────────────────────
+  // CHANGE 2: Now also accepts conversationId and userId from the request body
   let messages: { role: string; content: string }[];
+  let conversationId: string | null;
+  let userId: string | null;
+
   try {
     const body = await req.json();
     messages = body.messages;
+    conversationId = body.conversationId ?? null;
+    userId = body.userId ?? null;
     if (!Array.isArray(messages) || messages.length === 0) throw new Error();
   } catch {
     return new Response('Invalid request body.', { status: 400 });
@@ -702,7 +708,6 @@ export async function POST(req: Request) {
     };
   }
 
-  // Re-fetch with refined queries only if they differ from the raw message
   let vectorDocs = vectorDocsResult.status === 'fulfilled' ? vectorDocsResult.value : [];
   if (
     intentResult.status === 'fulfilled' &&
@@ -753,16 +758,26 @@ export async function POST(req: Request) {
     async onCompletion(completion) {
       ;(async () => {
         try {
-          const { error } = await supabase.from('chat_logs').insert({
+          // Always log to chat_logs (existing behaviour — unchanged)
+          const { error: logError } = await supabase.from('chat_logs').insert({
             user_ip: ip,
             user_query: lastMessage,
             ai_response: completion,
             optimized_queries: intent.database_queries.join(' | '),
             source_count: vectorDocs.length + articles.length,
           });
-          if (error) console.error('[Supabase] Log error:', error.message);
+          if (logError) console.error('[Supabase] Log error:', logError.message);
+
+          // CHANGE 3: Save messages to conversation history for logged-in users
+          if (userId && conversationId) {
+            const { error: msgError } = await supabaseAdmin.from('messages').insert([
+              { conversation_id: conversationId, role: 'user', content: lastMessage },
+              { conversation_id: conversationId, role: 'assistant', content: completion },
+            ]);
+            if (msgError) console.error('[Supabase] Message save error:', msgError.message);
+          }
         } catch (err) {
-          console.error('[Supabase] Unexpected log error:', err);
+          console.error('[Supabase] Unexpected post-stream error:', err);
         }
       })();
     },
