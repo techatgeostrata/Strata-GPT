@@ -4,8 +4,8 @@ import { useChat } from 'ai/react';
 import { useEffect, useRef, useState, memo, useCallback } from 'react';
 import {
   ArrowUp, Sparkles, Loader2, Link as LinkIcon, Youtube,
-  AlertCircle, LogOut, MessageSquarePlus, ChevronLeft,
-  ChevronRight, Trash2, User, PanelLeftClose, PanelLeftOpen,
+  AlertCircle, LogOut, MessageSquarePlus, Trash2, User,
+  PanelLeftClose, PanelLeftOpen, Pencil, Check, X,
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -86,11 +86,8 @@ const StreamingMessage = memo(({ content, isStreaming }: { content: string; isSt
 
   useEffect(() => {
     if (isStreaming && containerRef.current) {
-      const newChars = content.slice(prevContentRef.current.length);
-      if (newChars && containerRef.current.querySelector('.stream-raw')) {
-        const rawEl = containerRef.current.querySelector('.stream-raw') as HTMLElement;
-        rawEl.textContent = content;
-      }
+      const rawEl = containerRef.current.querySelector('.stream-raw') as HTMLElement | null;
+      if (rawEl) rawEl.textContent = content;
       prevContentRef.current = content;
     }
   }, [content, isStreaming]);
@@ -104,7 +101,6 @@ const StreamingMessage = memo(({ content, isStreaming }: { content: string; isSt
       </div>
     );
   }
-
   return <MemoizedMarkdown content={content} />;
 });
 StreamingMessage.displayName = 'StreamingMessage';
@@ -134,7 +130,6 @@ function AuthModal({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setAuthError('');
     setMessage('');
-
     if (mode === 'signup') {
       const { error } = await supabase.auth.signUp({
         email, password,
@@ -165,10 +160,8 @@ function AuthModal({ onClose }: { onClose: () => void }) {
           <p className="text-sm text-slate-400 mt-1">Save and access your conversations</p>
         </div>
 
-        <button
-          onClick={handleGoogleLogin} disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-2xl border border-slate-700 bg-[#131c2e] hover:bg-[#1a2540] transition-colors text-white font-medium text-[15px] mb-6"
-        >
+        <button onClick={handleGoogleLogin} disabled={loading}
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-2xl border border-slate-700 bg-[#131c2e] hover:bg-[#1a2540] transition-colors text-white font-medium text-[15px] mb-6">
           <svg width="18" height="18" viewBox="0 0 18 18">
             <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" />
             <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" />
@@ -185,32 +178,22 @@ function AuthModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <form onSubmit={handleEmailAuth} className="space-y-3">
-          <input
-            type="email" value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="Email address" required
-            className="w-full bg-[#131c2e] border border-slate-700 rounded-2xl px-4 py-3 text-[15px] text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#004AAD]/60 focus:ring-2 focus:ring-[#004AAD]/15 transition-all"
-          />
-          <input
-            type="password" value={password} onChange={e => setPassword(e.target.value)}
-            placeholder="Password" required
-            className="w-full bg-[#131c2e] border border-slate-700 rounded-2xl px-4 py-3 text-[15px] text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#004AAD]/60 focus:ring-2 focus:ring-[#004AAD]/15 transition-all"
-          />
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" required
+            className="w-full bg-[#131c2e] border border-slate-700 rounded-2xl px-4 py-3 text-[15px] text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#004AAD]/60 focus:ring-2 focus:ring-[#004AAD]/15 transition-all" />
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required
+            className="w-full bg-[#131c2e] border border-slate-700 rounded-2xl px-4 py-3 text-[15px] text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#004AAD]/60 focus:ring-2 focus:ring-[#004AAD]/15 transition-all" />
           {authError && <p className="text-red-400 text-sm px-1">{authError}</p>}
           {message && <p className="text-green-400 text-sm px-1">{message}</p>}
-          <button
-            type="submit" disabled={loading}
-            className="w-full py-3 rounded-2xl bg-[#004AAD] hover:bg-[#003882] text-white font-semibold text-[15px] transition-colors disabled:opacity-50"
-          >
+          <button type="submit" disabled={loading}
+            className="w-full py-3 rounded-2xl bg-[#004AAD] hover:bg-[#003882] text-white font-semibold text-[15px] transition-colors disabled:opacity-50">
             {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
         <p className="text-center text-sm text-slate-500 mt-4">
           {mode === 'signin' ? "Don't have an account?" : 'Already have an account?'}{' '}
-          <button
-            onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setAuthError(''); setMessage(''); }}
-            className="text-[#4D8BFF] hover:underline"
-          >
+          <button onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setAuthError(''); setMessage(''); }}
+            className="text-[#4D8BFF] hover:underline">
             {mode === 'signin' ? 'Sign up' : 'Sign in'}
           </button>
         </p>
@@ -220,10 +203,10 @@ function AuthModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─────────────────────────────────────────────
-// SIDEBAR — clean, uncluttered layout
+// SIDEBAR
 // ─────────────────────────────────────────────
 function Sidebar({
-  user, conversations, activeId, onNew, onSelect, onDelete,
+  user, conversations, activeId, onNew, onSelect, onDelete, onRename,
   onSignOut, onSignIn, collapsed, onToggle,
 }: {
   user: SupabaseUser | null;
@@ -232,11 +215,34 @@ function Sidebar({
   onNew: () => void;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
+  onRename: (id: string, newTitle: string) => void;
   onSignOut: () => void;
   onSignIn: () => void;
   collapsed: boolean;
   onToggle: () => void;
 }) {
+  // Track which conversation is being renamed
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  const startRename = (e: React.MouseEvent, conv: Conversation) => {
+    e.stopPropagation();
+    setRenamingId(conv.id);
+    setRenameValue(conv.title);
+    setTimeout(() => renameInputRef.current?.focus(), 50);
+  };
+
+  const commitRename = async (id: string) => {
+    const trimmed = renameValue.trim();
+    if (trimmed && trimmed !== conversations.find(c => c.id === id)?.title) {
+      onRename(id, trimmed);
+    }
+    setRenamingId(null);
+  };
+
+  const cancelRename = () => setRenamingId(null);
+
   function formatDate(dateStr: string) {
     const date = new Date(dateStr);
     const now = new Date();
@@ -254,50 +260,37 @@ function Sidebar({
       className="relative flex-shrink-0 h-screen bg-[#070e1a] border-r border-white/5 flex flex-col z-30"
       style={{ overflow: 'visible' }}
     >
-      {/* ── HEADER — logo row + collapse button ── */}
+      {/* Header */}
       <div className="flex items-center justify-between px-3 py-3 border-b border-white/5 min-h-[56px]">
-        {/* Logo — hidden when collapsed */}
         <AnimatePresence initial={false}>
           {!collapsed && (
             <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 'auto' }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.15 }}
+              initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }}
+              exit={{ opacity: 0, width: 0 }} transition={{ duration: 0.15 }}
               className="overflow-hidden"
             >
               <img src="/logo.png" alt="Geostrata" className="h-7 w-auto object-contain" />
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Collapse / expand toggle — always visible, right-aligned */}
-        <button
-          onClick={onToggle}
+        <button onClick={onToggle}
           className={`flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors flex-shrink-0 ${collapsed ? 'mx-auto' : 'ml-auto'}`}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
           {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
         </button>
       </div>
 
-      {/* ── NEW CHAT BUTTON ── */}
+      {/* New Chat */}
       <div className="px-3 py-2 border-b border-white/5">
-        <button
-          onClick={onNew}
+        <button onClick={onNew}
           className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl bg-[#004AAD]/15 hover:bg-[#004AAD]/25 border border-[#004AAD]/25 text-[#4D8BFF] transition-colors ${collapsed ? 'justify-center' : ''}`}
-          title="New conversation"
-        >
+          title="New conversation">
           <MessageSquarePlus className="w-4 h-4 flex-shrink-0" />
           <AnimatePresence initial={false}>
             {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 'auto' }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.15 }}
-                className="text-[13px] font-semibold overflow-hidden whitespace-nowrap"
-              >
+              <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }} transition={{ duration: 0.15 }}
+                className="text-[13px] font-semibold overflow-hidden whitespace-nowrap">
                 New Chat
               </motion.span>
             )}
@@ -305,7 +298,7 @@ function Sidebar({
         </button>
       </div>
 
-      {/* ── CONVERSATION LIST ── */}
+      {/* Conversation list */}
       <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
         {!collapsed && user && conversations.length === 0 && (
           <p className="text-xs text-slate-600 text-center py-8 px-2 leading-relaxed">
@@ -320,74 +313,94 @@ function Sidebar({
         {!collapsed && conversations.map(conv => (
           <div
             key={conv.id}
-            onClick={() => onSelect(conv.id)}
+            onClick={() => renamingId !== conv.id && onSelect(conv.id)}
             className={`group flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${
               activeId === conv.id
                 ? 'bg-[#004AAD]/20 border border-[#004AAD]/30'
                 : 'hover:bg-white/5 border border-transparent'
             }`}
           >
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] text-slate-300 truncate leading-snug">{conv.title}</p>
-              <p className="text-[10px] text-slate-600 mt-0.5">{formatDate(conv.updated_at)}</p>
-            </div>
-            <button
-              onClick={e => { e.stopPropagation(); onDelete(conv.id); }}
-              className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-900/30 text-slate-500 hover:text-red-400 transition-all flex-shrink-0"
-              title="Delete conversation"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
+            {renamingId === conv.id ? (
+              // ── RENAME MODE ──
+              <div className="flex-1 flex items-center gap-1 min-w-0" onClick={e => e.stopPropagation()}>
+                <input
+                  ref={renameInputRef}
+                  value={renameValue}
+                  onChange={e => setRenameValue(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') commitRename(conv.id);
+                    if (e.key === 'Escape') cancelRename();
+                  }}
+                  className="flex-1 min-w-0 bg-[#0B1221] border border-[#004AAD]/50 rounded-lg px-2 py-1 text-[12px] text-slate-100 focus:outline-none focus:border-[#004AAD]"
+                />
+                <button onClick={() => commitRename(conv.id)}
+                  className="p-1 rounded hover:bg-green-900/30 text-green-400 flex-shrink-0">
+                  <Check className="w-3 h-3" />
+                </button>
+                <button onClick={cancelRename}
+                  className="p-1 rounded hover:bg-red-900/30 text-slate-500 hover:text-red-400 flex-shrink-0">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              // ── NORMAL MODE ──
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] text-slate-300 truncate leading-snug">{conv.title}</p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">{formatDate(conv.updated_at)}</p>
+                </div>
+                {/* Action buttons — visible on hover */}
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
+                  <button
+                    onClick={e => startRename(e, conv)}
+                    className="p-1 rounded-lg hover:bg-white/10 text-slate-500 hover:text-slate-300 transition-colors"
+                    title="Rename">
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={e => { e.stopPropagation(); onDelete(conv.id); }}
+                    className="p-1 rounded-lg hover:bg-red-900/30 text-slate-500 hover:text-red-400 transition-colors"
+                    title="Delete">
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>
 
-      {/* ── USER / SIGN IN SECTION ── */}
+      {/* User section */}
       <div className="px-3 py-3 border-t border-white/5">
         {user ? (
           <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
-            {/* Avatar circle */}
             <div className="w-7 h-7 rounded-full bg-[#004AAD]/40 border border-[#004AAD]/50 flex items-center justify-center flex-shrink-0">
-              <span className="text-[11px] font-bold text-[#4D8BFF] uppercase">
-                {user.email?.[0] ?? 'U'}
-              </span>
+              <span className="text-[11px] font-bold text-[#4D8BFF] uppercase">{user.email?.[0] ?? 'U'}</span>
             </div>
             <AnimatePresence initial={false}>
               {!collapsed && (
-                <motion.div
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="flex-1 min-w-0 overflow-hidden"
-                >
+                <motion.div initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }} transition={{ duration: 0.15 }}
+                  className="flex-1 min-w-0 overflow-hidden">
                   <p className="text-[12px] text-slate-300 truncate">{user.email}</p>
                 </motion.div>
               )}
             </AnimatePresence>
-            <button
-              onClick={onSignOut}
+            <button onClick={onSignOut}
               className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0"
-              title="Sign out"
-            >
+              title="Sign out">
               <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
         ) : (
-          <button
-            onClick={onSignIn}
-            className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl hover:bg-white/5 text-slate-400 hover:text-slate-200 transition-colors ${collapsed ? 'justify-center' : ''}`}
-          >
+          <button onClick={onSignIn}
+            className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl hover:bg-white/5 text-slate-400 hover:text-slate-200 transition-colors ${collapsed ? 'justify-center' : ''}`}>
             <User className="w-4 h-4 flex-shrink-0" />
             <AnimatePresence initial={false}>
               {!collapsed && (
-                <motion.span
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="text-[13px] font-medium overflow-hidden whitespace-nowrap"
-                >
+                <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }} transition={{ duration: 0.15 }}
+                  className="text-[13px] font-medium overflow-hidden whitespace-nowrap">
                   Sign In
                 </motion.span>
               )}
@@ -411,6 +424,11 @@ export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
+  // FIX: Keep a ref to the active conversation ID so callbacks always
+  // see the latest value without needing it in dependency arrays
+  const activeConvIdRef = useRef<string | null>(null);
+  activeConvIdRef.current = activeConversationId;
+
   const { messages, append, setMessages, isLoading, error } = useChat({
     experimental_throttle: 50,
     body: {
@@ -433,23 +451,56 @@ export default function Home() {
 
   useEffect(() => {
     if (user) loadConversations();
-    else { setConversations([]); setActiveConversationId(null); }
+    else {
+      setConversations([]);
+      setActiveConversationId(null);
+      setMessages([]);
+    }
   }, [user]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  const loadConversations = useCallback(async () => {
-    const { data } = await supabase
+  // ── Conversation helpers ───────────────────
+
+  const loadConversations = async () => {
+    const { data, error } = await supabase
       .from('conversations')
       .select('id, title, updated_at')
       .order('updated_at', { ascending: false })
       .limit(50);
-    if (data) setConversations(data);
-  }, []);
+    if (error) { console.error('[loadConversations]', error.message); return; }
+    if (data) setConversations(data as Conversation[]);
+  };
 
-  const createConversation = useCallback(async (firstMessage: string): Promise<string | null> => {
+  // FIX: loadConversation now awaits the fetch properly and uses
+  // correct typing so messages render immediately on click
+  const loadConversation = async (conversationId: string) => {
+    // Set active ID first so the sidebar highlights immediately
+    setActiveConversationId(conversationId);
+
+    const { data, error } = await supabase
+      .from('messages')
+      .select('id, role, content, created_at')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+
+    if (error) { console.error('[loadConversation]', error.message); return; }
+
+    if (data) {
+      setMessages(
+        (data as SavedMessage[]).map(m => ({
+          id: m.id,
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+          createdAt: new Date(m.created_at),
+        }))
+      );
+    }
+  };
+
+  const createConversation = async (firstMessage: string): Promise<string | null> => {
     if (!user) return null;
     const title = firstMessage.length > 50 ? firstMessage.slice(0, 50) + '…' : firstMessage;
     const { data, error } = await supabase
@@ -457,42 +508,45 @@ export default function Home() {
       .insert({ user_id: user.id, title })
       .select('id')
       .single();
-    if (error || !data) return null;
+    if (error || !data) { console.error('[createConversation]', error?.message); return null; }
     await loadConversations();
-    return data.id;
-  }, [user, loadConversations]);
+    return (data as { id: string }).id;
+  };
 
-  const loadConversation = useCallback(async (conversationId: string) => {
-    setActiveConversationId(conversationId);
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true });
-    if (data) {
-      setMessages(data.map((m: SavedMessage) => ({
-        id: m.id, role: m.role, content: m.content,
-      })));
-    }
-  }, [setMessages]);
-
-  const deleteConversation = useCallback(async (conversationId: string) => {
+  const deleteConversation = async (conversationId: string) => {
     await supabase.from('conversations').delete().eq('id', conversationId);
-    if (activeConversationId === conversationId) { setActiveConversationId(null); setMessages([]); }
+    if (activeConvIdRef.current === conversationId) {
+      setActiveConversationId(null);
+      setMessages([]);
+    }
     await loadConversations();
-  }, [activeConversationId, setMessages, loadConversations]);
+  };
 
-  const startNewChat = useCallback(() => {
+  // NEW: rename a conversation
+  const renameConversation = async (conversationId: string, newTitle: string) => {
+    const { error } = await supabase
+      .from('conversations')
+      .update({ title: newTitle })
+      .eq('id', conversationId);
+    if (error) { console.error('[renameConversation]', error.message); return; }
+    // Update local state immediately — no need to refetch
+    setConversations(prev =>
+      prev.map(c => c.id === conversationId ? { ...c, title: newTitle } : c)
+    );
+  };
+
+  const startNewChat = () => {
     setActiveConversationId(null);
     setMessages([]);
     setLocalInput('');
-  }, [setMessages]);
+  };
 
-  const handleSignOut = useCallback(async () => {
+  const handleSignOut = async () => {
     await supabase.auth.signOut();
     setMessages([]);
     setActiveConversationId(null);
-  }, [setMessages]);
+    setConversations([]);
+  };
 
   const handleSend = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -500,13 +554,13 @@ export default function Home() {
     const messageText = localInput.trim();
     setLocalInput('');
 
-    let convId = activeConversationId;
+    let convId = activeConvIdRef.current;
     if (user && !convId) {
       convId = await createConversation(messageText);
-      setActiveConversationId(convId);
+      if (convId) setActiveConversationId(convId);
     }
     append({ role: 'user', content: messageText });
-  }, [localInput, isLoading, user, activeConversationId, createConversation, append]);
+  }, [localInput, isLoading, user, append]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -528,7 +582,6 @@ export default function Home() {
   return (
     <div className="flex h-screen bg-[#040A15] text-slate-200 font-sans selection:bg-[#004AAD]/50 overflow-hidden">
 
-      {/* Sidebar */}
       <Sidebar
         user={user}
         conversations={conversations}
@@ -536,13 +589,13 @@ export default function Home() {
         onNew={startNewChat}
         onSelect={loadConversation}
         onDelete={deleteConversation}
+        onRename={renameConversation}
         onSignOut={handleSignOut}
         onSignIn={() => setShowAuthModal(true)}
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(p => !p)}
       />
 
-      {/* Main */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
 
         {/* Header */}
@@ -557,10 +610,8 @@ export default function Home() {
               </div>
             </div>
             {!user && sidebarCollapsed && (
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="text-xs text-[#4D8BFF] border border-[#004AAD]/40 px-3 py-1.5 rounded-full hover:bg-[#004AAD]/10 transition-colors"
-              >
+              <button onClick={() => setShowAuthModal(true)}
+                className="text-xs text-[#4D8BFF] border border-[#004AAD]/40 px-3 py-1.5 rounded-full hover:bg-[#004AAD]/10 transition-colors">
                 Sign in
               </button>
             )}
@@ -585,22 +636,18 @@ export default function Home() {
                 </h2>
                 <div className="flex flex-wrap justify-center gap-3 w-full max-w-2xl">
                   {suggestedPrompts.map((prompt, i) => (
-                    <motion.button
-                      key={i}
+                    <motion.button key={i}
                       whileHover={{ scale: 1.02, backgroundColor: 'rgba(0,74,173,0.1)' }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => append({ role: 'user', content: prompt })}
-                      className="px-5 py-3 rounded-2xl border border-slate-800 bg-[#0B1221] text-[14px] text-slate-300 transition-all shadow-sm hover:border-[#004AAD]/60 hover:text-[#4D8BFF]"
-                    >
+                      className="px-5 py-3 rounded-2xl border border-slate-800 bg-[#0B1221] text-[14px] text-slate-300 transition-all shadow-sm hover:border-[#004AAD]/60 hover:text-[#4D8BFF]">
                       {prompt}
                     </motion.button>
                   ))}
                 </div>
                 {!user && (
-                  <motion.p
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
-                    className="mt-8 text-sm text-slate-500"
-                  >
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+                    className="mt-8 text-sm text-slate-500">
                     <button onClick={() => setShowAuthModal(true)} className="text-[#4D8BFF] hover:underline">Sign in</button>
                     {' '}to save your conversations
                   </motion.p>
@@ -613,8 +660,7 @@ export default function Home() {
                 {messages.map((m) => {
                   const isThisStreaming = isLastMessageStreaming && m.id === lastMessageId;
                   return (
-                    <motion.div
-                      key={m.id}
+                    <motion.div key={m.id}
                       initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, ease: 'easeOut' }}
                       className="w-full flex flex-col group"
@@ -671,10 +717,8 @@ export default function Home() {
         {/* Input bar */}
         <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#040A15] via-[#040A15]/95 to-transparent pt-12 pb-6 px-4 z-20">
           <div className="max-w-3xl mx-auto">
-            <form
-              onSubmit={handleSend}
-              className="relative flex items-center w-full bg-[#0B1221] rounded-[24px] border border-slate-800 focus-within:border-[#004AAD]/60 focus-within:ring-4 focus-within:ring-[#004AAD]/15 transition-all duration-300 shadow-xl shadow-black/20"
-            >
+            <form onSubmit={handleSend}
+              className="relative flex items-center w-full bg-[#0B1221] rounded-[24px] border border-slate-800 focus-within:border-[#004AAD]/60 focus-within:ring-4 focus-within:ring-[#004AAD]/15 transition-all duration-300 shadow-xl shadow-black/20">
               <input
                 className="w-full h-[56px] pl-6 pr-16 text-[15px] bg-transparent border-none focus:outline-none focus:ring-0 text-slate-100 placeholder-slate-500"
                 value={localInput}
@@ -684,11 +728,8 @@ export default function Home() {
                 disabled={isLoading}
                 autoComplete="off"
               />
-              <button
-                type="submit"
-                disabled={isLoading || !localInput.trim()}
-                className="absolute right-2 p-2.5 rounded-full bg-[#004AAD] text-white disabled:opacity-30 disabled:bg-slate-700 hover:bg-[#003882] hover:scale-105 active:scale-95 transition-all flex-shrink-0 flex items-center justify-center shadow-md shadow-[#004AAD]/30 disabled:shadow-none"
-              >
+              <button type="submit" disabled={isLoading || !localInput.trim()}
+                className="absolute right-2 p-2.5 rounded-full bg-[#004AAD] text-white disabled:opacity-30 disabled:bg-slate-700 hover:bg-[#003882] hover:scale-105 active:scale-95 transition-all flex-shrink-0 flex items-center justify-center shadow-md shadow-[#004AAD]/30 disabled:shadow-none">
                 <ArrowUp className="w-5 h-5" strokeWidth={2.5} />
               </button>
             </form>
@@ -701,7 +742,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Auth Modal */}
       <AnimatePresence>
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </AnimatePresence>
