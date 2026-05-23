@@ -221,7 +221,6 @@ function Sidebar({
   collapsed: boolean;
   onToggle: () => void;
 }) {
-  // Track which conversation is being renamed
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
@@ -260,7 +259,6 @@ function Sidebar({
       className="relative flex-shrink-0 h-screen bg-[#070e1a] border-r border-white/5 flex flex-col z-30"
       style={{ overflow: 'visible' }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between px-3 py-3 border-b border-white/5 min-h-[56px]">
         <AnimatePresence initial={false}>
           {!collapsed && (
@@ -280,7 +278,6 @@ function Sidebar({
         </button>
       </div>
 
-      {/* New Chat */}
       <div className="px-3 py-2 border-b border-white/5">
         <button onClick={onNew}
           className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl bg-[#004AAD]/15 hover:bg-[#004AAD]/25 border border-[#004AAD]/25 text-[#4D8BFF] transition-colors ${collapsed ? 'justify-center' : ''}`}
@@ -298,7 +295,6 @@ function Sidebar({
         </button>
       </div>
 
-      {/* Conversation list */}
       <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
         {!collapsed && user && conversations.length === 0 && (
           <p className="text-xs text-slate-600 text-center py-8 px-2 leading-relaxed">
@@ -321,7 +317,6 @@ function Sidebar({
             }`}
           >
             {renamingId === conv.id ? (
-              // ── RENAME MODE ──
               <div className="flex-1 flex items-center gap-1 min-w-0" onClick={e => e.stopPropagation()}>
                 <input
                   ref={renameInputRef}
@@ -343,13 +338,11 @@ function Sidebar({
                 </button>
               </div>
             ) : (
-              // ── NORMAL MODE ──
               <>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] text-slate-300 truncate leading-snug">{conv.title}</p>
                   <p className="text-[10px] text-slate-600 mt-0.5">{formatDate(conv.updated_at)}</p>
                 </div>
-                {/* Action buttons — visible on hover */}
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
                   <button
                     onClick={e => startRename(e, conv)}
@@ -370,7 +363,6 @@ function Sidebar({
         ))}
       </div>
 
-      {/* User section */}
       <div className="px-3 py-3 border-t border-white/5">
         {user ? (
           <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
@@ -424,17 +416,11 @@ export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
-  // FIX: Keep a ref to the active conversation ID so callbacks always
-  // see the latest value without needing it in dependency arrays
   const activeConvIdRef = useRef<string | null>(null);
   activeConvIdRef.current = activeConversationId;
 
   const { messages, append, setMessages, isLoading, error } = useChat({
     experimental_throttle: 50,
-    body: {
-      conversationId: activeConversationId,
-      userId: user?.id ?? null,
-    },
   });
 
   const [localInput, setLocalInput] = useState('');
@@ -474,10 +460,7 @@ export default function Home() {
     if (data) setConversations(data as Conversation[]);
   };
 
-  // FIX: loadConversation now awaits the fetch properly and uses
-  // correct typing so messages render immediately on click
   const loadConversation = async (conversationId: string) => {
-    // Set active ID first so the sidebar highlights immediately
     setActiveConversationId(conversationId);
 
     const { data, error } = await supabase
@@ -522,14 +505,12 @@ export default function Home() {
     await loadConversations();
   };
 
-  // NEW: rename a conversation
   const renameConversation = async (conversationId: string, newTitle: string) => {
     const { error } = await supabase
       .from('conversations')
       .update({ title: newTitle })
       .eq('id', conversationId);
     if (error) { console.error('[renameConversation]', error.message); return; }
-    // Update local state immediately — no need to refetch
     setConversations(prev =>
       prev.map(c => c.id === conversationId ? { ...c, title: newTitle } : c)
     );
@@ -557,9 +538,18 @@ export default function Home() {
     let convId = activeConvIdRef.current;
     if (user && !convId) {
       convId = await createConversation(messageText);
-      if (convId) setActiveConversationId(convId);
+      if (convId) {
+        setActiveConversationId(convId);
+        activeConvIdRef.current = convId; // Force immediate ref update
+      }
     }
-    append({ role: 'user', content: messageText });
+    
+    // FIX: Safely pass the new conversation ID directly inside the API options 
+    // so the backend sees the correct ID for the very first message.
+    append(
+      { role: 'user', content: messageText },
+      { options: { body: { conversationId: convId, userId: user?.id ?? null } } }
+    );
   }, [localInput, isLoading, user, append]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -598,7 +588,6 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
 
-        {/* Header */}
         <header className="flex-shrink-0 px-6 py-4 bg-[#040A15]/90 backdrop-blur-md border-b border-white/5 z-20">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -618,7 +607,6 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Messages */}
         <div className="flex-1 overflow-y-auto pb-40 pt-6 scroll-smooth">
           <div className="max-w-3xl mx-auto px-5 md:px-6">
 
@@ -714,7 +702,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Input bar */}
         <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#040A15] via-[#040A15]/95 to-transparent pt-12 pb-6 px-4 z-20">
           <div className="max-w-3xl mx-auto">
             <form onSubmit={handleSend}
