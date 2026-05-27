@@ -59,34 +59,33 @@ The Geostrata's complete verified social media and web presence — present ALL 
 - Twitter/X (Covering China): @COVERINGCHINA
 - Twitter/X (Covering ISRO): @COVERINGISRO
 - Twitter/X (Covering MEA): @COVERINGMEA
-
-IMPORTANT: Only Instagram (174K+) and LinkedIn (4,383+) have verified follower counts.
-Do NOT state follower counts for Twitter/X or YouTube.
-Format as a clean Markdown bullet list with clickable links exactly as shown.
-Do NOT invent any additional handles or URLs.
-Do NOT omit any of these when asked for all links or handles.
   `.trim(),
 
   foundersAndTeam: `
 The Geostrata was co-founded by Harsh Suri and Pratyaksh Kumar in 2021.
 It was formally constituted as The Geostrata Foundation in 2023.
-It currently has 400+ members drawn from diverse socio-economic backgrounds across India.
+It currently has a 200-member team drawn from diverse socio-economic backgrounds across India.
 Members come from: Delhi University, IIMs, IITs, NLUs, Ashoka University, University of Glasgow, and University of Alberta.
-Always state Harsh Suri and Pratyaksh Kumar as founders. Never say founder names are undisclosed.
+  `.trim(),
+
+  partnershipsAndEvents: `
+===== STRATA PARTNERSHIPS, CONFERENCES & INTERVIEWS (AUTHORITATIVE) =====
+The Geostrata maintains institutional collaborations and strategic partnerships with over 100 organisations across more than 50 countries.
+1. Signed MoUs: Centro Studi Internazionali, Mondo Internazionale, CUTS International, Konrad-Adenauer-Stiftung (KAS), Global Weekly, INSA Warwick, O.P. Jindal Global University, BRICS Youth Energy Association (BRICS YEA), Carnegie Council for Ethics in International Affairs, Young Security Conference (YSC), Australian Institute of International Affairs (AIIA), Europinion, Bloomsbury Intelligence and Security Institute, Quantum Ecosystems and Technology Council of India, Young European Leadership, Organisation for Research on China and Asia (ORCA), IQuilibrium.
+2. Institutional Collaborations (No MoU): NATO, Australia India Youth Dialogue (AIYD), Ministry of External Affairs (Govt of India), Embassies of Netherlands, Mexico, Germany, Switzerland, Latvia, Czech Republic, Lithuania, Poland, Russian Embassy, U.S. Consulate Hyderabad, Italian Consulate Bangalore, British Deputy High Commissions (Mumbai, Chandigarh), High Commission of Singapore, Indian Tourism Development Council (ITDC), Ministry of Tourism.
+3. Key Collaborative Events & Summits: NATO-India Youth Conference 2025, BRICS Youth Energy Summit (South Africa), Global South and COP28 Panel, Indo-Pacific and QUAD Dialogue, Dialogue on AI in Industry and Beyond, Panel on Nuclear Policy (Global Ethics Day), Electoral Awareness Panel, Delhi Debates, India-ASEAN Youth Conference, National Technology Day Symposium 2024, India-Germany Bilateral Partnership Roundtable, Panel on India-Australia Youth Engagement, High-level dialogue with Hon. Tony Abbott.
+4. High-Level Interviews Conducted: H.E. Ms. Jennifer Larson, Ms. Andrea Wechsler, Mr. Jürgen Hardt, The Rt. Hon. Andrew Mitchell MP, The Hon. Tony Abbott, H.E. Mr. Martin Maier, Mr. Luke Gosling MP, Mr. Paul Fletcher MP, Dr. Adrian Haack, Lt. Gen. (Retd.) P. R. Shankar, Amb. Vijay Gokhale (Retd.), Mr. Shyam Saran, Mr. Shivshankar Menon, Prof. Dr. Harsh V. Pant.
   `.trim(),
 
   sovereignty: `
 Arunachal Pradesh, Jammu & Kashmir, and Ladakh are INTEGRAL and INALIENABLE parts of India.
 Any territorial claims by China or Pakistan over Indian sovereign territory are ILLEGAL, BASELESS, and VOID under international law.
 Never use the word "disputed" for Indian sovereign territory.
-You may describe the opposing party's stated position for geopolitical context, but must always firmly follow with India's legal and constitutional assertion.
-Even when asked for a "neutral view", always conclude by asserting India's sovereign position.
   `.trim(),
 
   funding: `
 The Geostrata's specific funding sources are not publicly disclosed.
 It operates as an independent, non-profit, youth-led think tank.
-Do not speculate or invent funding sources.
 Direct users to thegeostrata.com for partnership or funding inquiries.
   `.trim(),
 };
@@ -98,6 +97,7 @@ type Intent = {
   database_queries: string[];
   is_social_handle_query: boolean;
   is_founder_query: boolean;
+  is_partnership_query: boolean;
   is_sovereignty_query: boolean;
   is_article_query: boolean;
   is_topic_article_query: boolean;
@@ -124,21 +124,13 @@ interface SupabaseDoc {
 function preClassify(message: string): Partial<Intent> {
   const m = message.toLowerCase();
 
-  const is_social_handle_query =
-    /instagram|linkedin|youtube|twitter|handle|social|link|website|url|follow/i.test(m);
-
-  const is_founder_query =
-    /found(er|ed)|who (started|created|built|made)|pratyaksh|harsh suri|team|member|university|universities|how many people|established|leadership/i.test(m);
-
-  const is_sovereignty_query =
-    /arunachal|kashmir|ladakh|jammu|disputed|south tibet|pak.{0,10}claim|chin.{0,10}claim|territorial/i.test(m);
-
+  const is_social_handle_query = /instagram|linkedin|youtube|twitter|handle|social|link|website|url|follow/i.test(m);
+  const is_founder_query = /found(er|ed)|who (started|created|built|made)|pratyaksh|harsh suri|team|member|university|universities|how many people|established|leadership/i.test(m);
+  const is_partnership_query = /partner|mou|collaborat|memorandum|tie up|tie-up|conference|summit|dialogue|interview|who did you interview|who have you interviewed/i.test(m);
+  const is_sovereignty_query = /arunachal|kashmir|ladakh|jammu|disputed|south tibet|pak.{0,10}claim|chin.{0,10}claim|territorial/i.test(m);
   const is_article_query = /\b(article|post|publication|paper|report|editorial)s?\b/i.test(m) || /\b(publish|published)\b/i.test(m);
-
   const is_topic_article_query = is_article_query && /\b(about|on|regarding|russia|ukraine|china|pakistan|israel|gaza|conflict|war|election)\b/i.test(m);
-
-  const is_funding_query =
-    /fund(ing|ed|er|s)?|financ|donor|sponsor|revenue|budget|money|grant|invest/i.test(m);
+  const is_funding_query = /fund(ing|ed|er|s)?|financ|donor|sponsor|revenue|budget|money|grant|invest/i.test(m);
 
   const is_current_events_query =
     /\b(operation\s+\w+|what (is|was|are|were)\s+(operation|the\s+\w+\s+(war|conflict|attack|crisis))|explain\s+operation|tell me about operation)\b/i.test(m) ||
@@ -152,6 +144,7 @@ function preClassify(message: string): Partial<Intent> {
   return {
     is_social_handle_query,
     is_founder_query,
+    is_partnership_query,
     is_sovereignty_query,
     is_article_query,
     is_topic_article_query,
@@ -186,6 +179,7 @@ async function classifyIntent(lastMessage: string, recentHistory: string): Promi
       database_queries: buildFallbackQueries(),
       is_social_handle_query: preResult.is_social_handle_query ?? false,
       is_founder_query: preResult.is_founder_query ?? false,
+      is_partnership_query: preResult.is_partnership_query ?? false,
       is_sovereignty_query: preResult.is_sovereignty_query ?? false,
       is_article_query: preResult.is_article_query ?? false,
       is_topic_article_query: preResult.is_topic_article_query ?? false,
@@ -210,6 +204,7 @@ Output ONLY valid JSON:
   "database_queries": ["resolved query 1"],
   "is_social_handle_query": false,
   "is_founder_query": false,
+  "is_partnership_query": false,
   "is_sovereignty_query": false,
   "is_article_query": false,
   "is_topic_article_query": false,
@@ -218,10 +213,11 @@ Output ONLY valid JSON:
 }
 CRITICAL RULES FOR database_queries:
 1. Strip ALL conversational fluff ("Can you show me", "Give me", "a video", "youtube", "interview").
-2. Extract ONLY the pure geopolitical topic (e.g., "NATO European security").
-3. If is_founder_query: include "Founded 2021 Harsh Suri Pratyaksh Kumar The Geostrata Foundation 400+ members".
-4. If is_article_query: include "latest articles publications The Geostrata".
-is_current_events_query: true if asking about a named military operation, recent conflict, or event from 2024-2026.`,
+2. Extract ONLY the pure geopolitical topic or the SPECIFIC PERSON'S NAME (e.g., "Shivshankar Menon", "Tony Abbott").
+3. IF the user asks for a video/interview, output TWO queries:
+   - Query 1: The pure topic or exact person's name (e.g., "Shivshankar Menon")
+   - Query 2: Topic/Name + "interview video" (e.g., "Shivshankar Menon interview video")
+4. If is_founder_query: include "Founded 2021 Harsh Suri Pratyaksh Kumar".`,
         },
         { role: 'user', content: `History:\n${recentHistory}\n\nMessage: ${lastMessage}` },
       ],
@@ -233,6 +229,7 @@ is_current_events_query: true if asking about a named military operation, recent
         ? parsed.database_queries : buildFallbackQueries(),
       is_social_handle_query: (parsed.is_social_handle_query ?? false) || (preResult.is_social_handle_query ?? false),
       is_founder_query: (parsed.is_founder_query ?? false) || (preResult.is_founder_query ?? false),
+      is_partnership_query: (parsed.is_partnership_query ?? false) || (preResult.is_partnership_query ?? false),
       is_sovereignty_query: (parsed.is_sovereignty_query ?? false) || (preResult.is_sovereignty_query ?? false),
       is_article_query: (parsed.is_article_query ?? false) || (preResult.is_article_query ?? false),
       is_topic_article_query: (parsed.is_topic_article_query ?? false) || (preResult.is_topic_article_query ?? false),
@@ -244,6 +241,7 @@ is_current_events_query: true if asking about a named military operation, recent
       database_queries: buildFallbackQueries(),
       is_social_handle_query: preResult.is_social_handle_query ?? false,
       is_founder_query: preResult.is_founder_query ?? false,
+      is_partnership_query: preResult.is_partnership_query ?? false,
       is_sovereignty_query: preResult.is_sovereignty_query ?? false,
       is_article_query: preResult.is_article_query ?? false,
       is_topic_article_query: preResult.is_topic_article_query ?? false,
@@ -274,12 +272,9 @@ async function fetchCurrentEventInfo(query: string): Promise<string> {
     if (!res.ok) return '';
     const data = await res.json();
     const answer = data.answer ? `Summary: ${data.answer}\n\n` : '';
-    const results = (data.results as Array<{ title: string; url: string; content: string }> ?? [])
-      .slice(0, 4);
+    const results = (data.results as Array<{ title: string; url: string; content: string }> ?? []).slice(0, 4);
     if (!results.length) return '';
-    return answer + results
-      .map((r, i) => `[Web Source ${i + 1}] ${r.title}\nURL: ${r.url}\n${r.content}`)
-      .join('\n\n');
+    return answer + results.map((r, i) => `[Web Source ${i + 1}] ${r.title}\nURL: ${r.url}\n${r.content}`).join('\n\n');
   } catch (err) {
     return '';
   }
@@ -307,11 +302,7 @@ function parseArticlesFromHtml(html: string): Article[] {
           try { path = new URL(fullUrl).pathname; } catch { continue; }
           if (seenPaths.has(path)) continue;
           seenPaths.add(path);
-          articles.push({
-            title, url: fullUrl,
-            description: (item.description || item.abstract || '').trim(),
-            published_date: item.datePublished || item.dateCreated,
-          });
+          articles.push({ title, url: fullUrl, description: (item.description || item.abstract || '').trim(), published_date: item.datePublished || item.dateCreated });
         }
       }
     } catch { /* continue */ }
@@ -327,10 +318,7 @@ function parseArticlesFromHtml(html: string): Article[] {
     if (seenPaths.has(path)) continue;
     const pos = html.indexOf(match[0]);
     const window = html.slice(Math.max(0, pos - 400), pos + 400);
-    const title =
-      window.match(/aria-label="([^"]{10,150})"/)?.[1] ||
-      window.match(/<h[123][^>]*>([^<]{10,150})<\/h[123]>/i)?.[1] ||
-      window.match(/data-hook="post-title"[^>]*>([^<]{10,})</i)?.[1];
+    const title = window.match(/aria-label="([^"]{10,150})"/)?.[1] || window.match(/<h[123][^>]*>([^<]{10,150})<\/h[123]>/i)?.[1] || window.match(/data-hook="post-title"[^>]*>([^<]{10,})</i)?.[1];
     if (!title) continue;
     seenPaths.add(path);
     articles.push({ title: title.trim(), url: cleanUrl, description: '' });
@@ -343,10 +331,7 @@ async function fetchArticlesFromSite(): Promise<Article[]> {
   const results: Article[] = [];
   for (const url of [`${SITE_BASE}/blog`, `${SITE_BASE}/geopost`]) {
     try {
-      const res = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; StrataGPT/1.0)', 'Accept': 'text/html' },
-        signal: AbortSignal.timeout(6000),
-      });
+      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'text/html' }, signal: AbortSignal.timeout(6000) });
       if (!res.ok) continue;
       results.push(...parseArticlesFromHtml(await res.text()));
       if (results.length >= 6) break;
@@ -381,14 +366,7 @@ async function fetchArticlesFromTavily(topicQuery?: string): Promise<Article[]> 
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        api_key: process.env.TAVILY_API_KEY,
-        query: q, 
-        search_depth: 'advanced', 
-        include_answer: false,
-        max_results: 7, 
-        days,
-        include_domains: ['thegeostrata.com'],
-        topic
+        api_key: process.env.TAVILY_API_KEY, query: q, search_depth: 'advanced', include_answer: false, max_results: 7, days, include_domains: ['thegeostrata.com'], topic
       }),
       signal: AbortSignal.timeout(6000),
     }).then(r => r.json()).then(d => (d.results ?? []) as Array<{ title: string; url: string; content: string; published_date?: string }>)
@@ -410,45 +388,81 @@ async function fetchArticlesFromTavily(topicQuery?: string): Promise<Article[]> 
   return raw;
 }
 
+// ─────────────────────────────────────────────
+// DYNAMIC YOUTUBE LIVE SCRAPING (NEW FIX)
+// ─────────────────────────────────────────────
+async function fetchYouTubeVideos(topicQuery?: string): Promise<Article[]> {
+  const query = topicQuery ? `"The Geostrata" ${topicQuery}` : `"The Geostrata" channel latest videos`;
+  
+  const searchConfigs = [
+    { q: query, days: 365, topic: 'general' }
+  ];
+
+  const settled = await Promise.allSettled(searchConfigs.map(({ q, days, topic }) =>
+    fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: process.env.TAVILY_API_KEY,
+        query: q, 
+        search_depth: 'advanced', 
+        include_answer: false,
+        max_results: 5, 
+        days,
+        include_domains: ['youtube.com'],
+        topic
+      }),
+      signal: AbortSignal.timeout(6000),
+    }).then(r => r.json()).then(d => (d.results ?? []) as Array<{ title: string; url: string; content: string; published_date?: string }>)
+  ));
+
+  const videos: Article[] = [];
+  for (const result of settled) {
+    if (result.status !== 'fulfilled') continue;
+    for (const r of result.value) {
+      try {
+        if (r.url.includes('watch?v=') || r.url.includes('youtu.be')) {
+          videos.push({
+            title: r.title.replace(/ - YouTube$/i, '').trim(),
+            url: r.url,
+            description: r.content || '',
+            published_date: r.published_date,
+          });
+        }
+      } catch { /* skip */ }
+    }
+  }
+  return videos;
+}
+
 function dedupeAndSort(articles: Article[]): Article[] {
   const seen = new Map<string, Article>();
   for (const a of articles) {
     try { const path = new URL(a.url).pathname; if (!seen.has(path)) seen.set(path, a); } catch { /* skip */ }
   }
-  return Array.from(seen.values())
-    .sort((a, b) => {
-      const da = a.published_date ? new Date(a.published_date).getTime() : 0;
-      const db = b.published_date ? new Date(b.published_date).getTime() : 0;
-      return db - da;
-    }).slice(0, 8);
+  return Array.from(seen.values()).sort((a, b) => {
+    const da = a.published_date ? new Date(a.published_date).getTime() : 0;
+    const db = b.published_date ? new Date(b.published_date).getTime() : 0;
+    return db - da;
+  }).slice(0, 8);
 }
 
 async function fetchLatestArticles(topicQuery?: string): Promise<Article[]> {
-  const cacheKey = topicQuery 
-    ? `geostrata:articles:topic:${topicQuery.toLowerCase().replace(/[^a-z0-9]/g, '')}` 
-    : ARTICLE_CACHE_KEY;
-
+  const cacheKey = topicQuery ? `geostrata:articles:topic:${topicQuery.toLowerCase().replace(/[^a-z0-9]/g, '')}` : ARTICLE_CACHE_KEY;
   try {
     const cached = await redis.get(cacheKey);
     if (cached) return JSON.parse(cached as string) as Article[];
   } catch (err) { /* skip */ }
 
   const promises: Promise<any>[] = [];
-  
-  if (!topicQuery) {
-    promises.push(fetchArticlesFromSite());
-  }
+  if (!topicQuery) promises.push(fetchArticlesFromSite());
   promises.push(fetchArticlesFromTavily(topicQuery));
 
   const results = await Promise.allSettled(promises);
-  const merged = dedupeAndSort(
-    results.flatMap(r => r.status === 'fulfilled' ? r.value : [])
-  );
+  const merged = dedupeAndSort(results.flatMap(r => r.status === 'fulfilled' ? r.value : []));
 
   if (merged.length > 0) {
-    try { 
-      await redis.setex(cacheKey, topicQuery ? 300 : ARTICLE_CACHE_TTL, JSON.stringify(merged)); 
-    } catch { /* skip */ }
+    try { await redis.setex(cacheKey, topicQuery ? 300 : ARTICLE_CACHE_TTL, JSON.stringify(merged)); } catch { /* skip */ }
   }
   return merged;
 }
@@ -466,7 +480,6 @@ async function fetchVectorDocs(queries: string[]): Promise<SupabaseDoc[]> {
   await Promise.allSettled(embeddingResponse.data.map(async (embedData) => {
     try {
       const { data: docs, error } = await supabase.rpc('match_documents', {
-        // FIX: Lowered threshold significantly and increased limit to capture hard-to-find metadata rows
         query_embedding: embedData.embedding, match_threshold: 0.02, match_count: 20,
       });
       if (docs) allDocs.push(...(docs as SupabaseDoc[]));
@@ -489,37 +502,40 @@ function buildInternalContext(docs: SupabaseDoc[]): string {
   
   return docs.map((doc, i) => {
     const metadata = doc.metadata || {};
-    
     const rawUrl = (metadata.url || metadata.URL || metadata.link || metadata.Link || '') as string;
     const rawType = (metadata.type || metadata.Type || '') as string;
     
     const typeStr = rawType ? `Type: ${rawType} | ` : '';
     const urlStr = rawUrl ? `URL: ${rawUrl}` : '';
     
-    // FIX: Deep scan both the metadata AND the raw text content for youtube links
     const isVideoType = rawType.toLowerCase() === 'video';
     const isVideoUrl = /youtube\.com|youtu\.be/i.test(rawUrl) || /youtube\.com|youtu\.be/i.test(doc.content);
+    const isArticleOrInterview = rawUrl.includes('/post/') || rawUrl.toLowerCase().includes('interview');
     
-    // FIX: Scream at the AI if it is a video so it cannot ignore it
-    const isVideo = (isVideoType || isVideoUrl) ? '\n[CRITICAL: THIS IS A YOUTUBE VIDEO - YOU MUST EMBED THIS URL IN YOUR RESPONSE]' : '';
+    let specialTag = '';
+    if (isVideoType || isVideoUrl) {
+      specialTag = '\n[CRITICAL: THIS IS A YOUTUBE VIDEO - YOU MUST EMBED THIS URL]';
+    } else if (isArticleOrInterview) {
+      specialTag = '\n[CRITICAL: THIS IS AN INTERVIEW/ARTICLE LINK - YOU MUST INCLUDE THIS URL]';
+    }
     
-    return `[Archive Source ${i + 1}] ${typeStr}Title: ${metadata.title || 'Untitled'} | ${urlStr}${isVideo}\nContent: ${doc.content}`;
+    return `[Archive Source ${i + 1}] ${typeStr}Title: ${metadata.title || 'Untitled'} | ${urlStr}${specialTag}\nContent: ${doc.content}`;
   }).join('\n\n');
 }
 
-function buildArticleContext(articles: Article[]): string {
-  if (!articles.length) return 'No live articles available.';
-  return articles.map((a, i) => {
+// FIX: Combined Article & Live Video Context Builder
+function buildLiveContext(sources: Article[]): string {
+  if (!sources.length) return 'No live articles or videos available.';
+  return sources.map((s, i) => {
     let displayDate = '';
-    if (a.published_date) {
-      try {
-        const d = new Date(a.published_date);
-        displayDate = `\nPublished: ${d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
-      } catch {
-        displayDate = '';
-      }
+    if (s.published_date) {
+      try { displayDate = `\nPublished: ${new Date(s.published_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`; } catch { displayDate = ''; }
     }
-    return `[Article ${i + 1}]\nTitle: ${a.title}\nURL: ${a.url}${displayDate}\nDescription: ${a.description || 'See article at the link.'}`;
+    
+    const isVideoUrl = /youtube\.com|youtu\.be/i.test(s.url);
+    const specialTag = isVideoUrl ? '\n[CRITICAL: THIS IS A YOUTUBE VIDEO - YOU MUST EMBED THIS URL IN YOUR RESPONSE]' : '';
+    
+    return `[Live Source ${i + 1}]\nTitle: ${s.title}\nURL: ${s.url}${displayDate}${specialTag}\nDescription: ${s.description || 'See source at the link.'}`;
   }).join('\n\n');
 }
 
@@ -528,7 +544,7 @@ function buildArticleContext(articles: Article[]): string {
 // ─────────────────────────────────────────────
 function buildSystemPrompt(
   internalContext: string,
-  articleContext: string,
+  liveContext: string,
   currentEventContext: string,
   intent: Intent,
   currentDate: string
@@ -536,6 +552,7 @@ function buildSystemPrompt(
   const hardcodedSection = [
     intent.is_social_handle_query ? `\n===== SOCIAL MEDIA & LINKS (AUTHORITATIVE) =====\n${HARDCODED_FACTS.socialHandles}` : '',
     intent.is_founder_query ? `\n===== FOUNDER & TEAM INFO (AUTHORITATIVE) =====\n${HARDCODED_FACTS.foundersAndTeam}` : '',
+    intent.is_partnership_query ? `\n${HARDCODED_FACTS.partnershipsAndEvents}` : '',
     intent.is_sovereignty_query ? `\n===== SOVEREIGNTY POSITION (NON-NEGOTIABLE) =====\n${HARDCODED_FACTS.sovereignty}` : '',
     intent.is_funding_query ? `\n===== FUNDING INFO (DO NOT SPECULATE) =====\n${HARDCODED_FACTS.funding}` : '',
   ].filter(Boolean).join('\n');
@@ -550,8 +567,8 @@ ${hardcodedSection}
 ===== GEOSTRATA INTERNAL ARCHIVES =====
 ${internalContext}
 
-===== LIVE ARTICLES FROM THEGEOSTRATA.COM (sorted newest first) =====
-${articleContext}
+===== LIVE WEB SOURCES (ARTICLES & VIDEOS) =====
+${liveContext}
 
 ===== LIVE WEB CONTEXT (current events — use this to answer recent event questions) =====
 ${currentEventContext || 'No live web data fetched for this query.'}
@@ -572,68 +589,55 @@ NEVER use "disputed" for Indian territory. NEVER say the situation is "complex" 
 
 **RULE 3 — SOCIAL MEDIA & LINKS (CRITICAL):**
 When asked for handles, links, social media, or "all their links" — present ALL verified links as clickable Markdown.
-Includes: Website, Instagram, LinkedIn, YouTube, Twitter/X main, and all four sub-handles.
 
-**RULE 4 — FOUNDERS (CRITICAL):**
+**RULE 4 — FOUNDERS & ORG DATA (CRITICAL):**
 The Geostrata was co-founded by Harsh Suri and Pratyaksh Kumar in 2021. Always state their names.
+If asked about partnerships, MoU, collaborations, or conferences, rely entirely on the AUTHORITATIVE facts block provided above. Do not skip any partners if asked for a full list.
 
-**RULE 5 — LATEST ARTICLES:**
+**RULE 5 — LATEST ARTICLES & PUBLICATIONS:**
 When the user asks for latest/recent articles or publications generally:
-- Use ONLY the "LIVE ARTICLES FROM THEGEOSTRATA.COM" section.
+- Use ONLY the "LIVE WEB SOURCES (ARTICLES & VIDEOS)" section.
 - Format each as: **[Title](URL)** — (Month Year) 1–2 sentence description. Sort newest first.
 - Present ALL articles listed. Always append ### References at the bottom.
-- Do NOT output specific days (like "May 13" or "May 16") to prevent search indexing discrepancies. Only output the Month and Year.
 
 **RULE 6 — TOPIC-SPECIFIC ARTICLE SEARCH:**
 ONLY apply this rule when the user EXPLICITLY uses phrases like: "what has Geostrata written about X", "give me articles about X".
-1. Scan ALL articles in LIVE ARTICLES section with BROAD keyword matching.
+1. Scan ALL articles in LIVE WEB SOURCES section with BROAD keyword matching.
 2. Scan Internal Archives for any matching content.
 3. Cite any relevant articles found with clickable links.
 
-**RULE 7 — DATE-SPECIFIC ARTICLE QUERIES:**
-If asked what was published "yesterday", "this week", or on a specific date:
-- Only cite articles where published_date explicitly matches.
-
-**RULE 8 — INTERNAL DATA FIREWALL:**
+**RULE 7 — INTERNAL DATA FIREWALL:**
 Team, founders, member count, universities, finances → ONLY Internal Archives or Authoritative sections.
 NEVER mention "Slide", "Deck", "PDF", or parenthetical citations like "(Source: X)".
 
-**RULE 9 — FUNDING:**
-Funding details not publicly disclosed. Do not speculate. Direct to thegeostrata.com.
-
-**RULE 10 — CITATION FORMAT:**
-- Live Articles → clickable Markdown [Title](URL) + ### References section at bottom.
+**RULE 8 — CITATION FORMAT:**
+- Live Articles/Videos → clickable Markdown [Title](URL) + ### References section at bottom.
 - Live Web Context → cite as [Title](URL) inline + ### References at bottom.
 - Internal Archives → natural prose, no citations, no References section.
 
-**RULE 11 — ACADEMIC & TECHNICAL RIGOR (CRITICAL):**
+**RULE 9 — ACADEMIC & TECHNICAL RIGOR (CRITICAL):**
 Your answers MUST be highly specific, granular, and technical.
 NEVER give generalized, superficial, or watered-down summaries.
 Extract and state exact metrics, dates, policy names, doctrines, and data points.
 
-**RULE 12 — VIDEO EMBEDDING & INTERVIEWS (CRITICAL):**
-If the user asks for a video or interview, YOU MUST forcefully extract and output the URLs from the "GEOSTRATA INTERNAL ARCHIVES".
-- If you see ANY youtube.com or youtu.be link, output EXACTLY: [Video Title](URL).
-- If you see a written interview link, output EXACTLY: [Interview Title](URL).
-Do NOT apologize or say there are no videos if they exist in the text above. List EVERY SINGLE VIDEO AND INTERVIEW found.
+**RULE 10 — VIDEO EMBEDDING & SPECIFIC INTERVIEWS (CRITICAL):**
+If the user asks for a video or interview, you MUST check BOTH the "GEOSTRATA INTERNAL ARCHIVES" and "LIVE WEB SOURCES (ARTICLES & VIDEOS)".
+- **FILTER BY NAME/TOPIC:** If the user asks for a SPECIFIC person (e.g., "Shivshankar Menon") or topic (e.g., "China Oil"), you MUST ONLY output the media link from the context that matches that name or topic.
+- **EXTRACT URLS:** Scan BOTH the metadata "URL:" field and the "Content:" block for links (youtube.com, youtu.be, OR thegeostrata.com/post/).
+- **FORMAT:** Format EACH as a clickable Markdown link: [Title of Media](URL). 
+- **NO HALLUCINATIONS:** NEVER use placeholders, dummy links, or fabricate URLs. If the exact URL is NOT present in the retrieved internal archives or live web sources, explicitly state: "I do not have the specific link to this in my current archives." DO NOT make up a link.
 
-**RULE 13 — COMPLETENESS & FORMAT:**
+**RULE 11 — COMPLETENESS & FORMAT:**
 Never truncate mid-sentence. Answer every part of multi-part questions.
 Use ## headings, bullet points, **bold** for longer responses. Keep short answers concise.
 
-**RULE 14 — CONTEXT SWITCHING:**
-When topic changes, fully switch. Do not carry irrelevant prior context forward.
-
-**RULE 15 — GEOPOLITICAL ANALYSIS (CRITICAL):**
+**RULE 12 — GEOPOLITICAL ANALYSIS (CRITICAL):**
 For ANY question about geopolitics, world events, international relations, India, China, Pakistan, military, alliances:
 ALWAYS answer directly and comprehensively from your knowledge base.
 NEVER redirect users to the website for questions you can answer yourself.
 
-**RULE 16 — CURRENT EVENTS:**
+**RULE 13 — CURRENT EVENTS:**
 If the LIVE WEB CONTEXT section contains information relevant to what the user asked: USE IT IMMEDIATELY.
-
-**RULE 17 — NEVER REFUSE ANSWERABLE QUESTIONS:**
-The phrases "I can't pull this information", "please visit the website for this" are FORBIDDEN for general knowledge questions.
 `.trim();
 }
 
@@ -674,23 +678,26 @@ export async function POST(req: Request) {
   const shouldFetchArticles = preIntent.is_article_query || preIntent.is_topic_article_query;
   const shouldFetchCurrentEvent = preIntent.is_current_events_query;
   
+  // FIX: Detect video query
+  const isVideoOrInterviewQuery = /video|youtube|interview|watch/i.test(lastMessage);
+
+  // FIX: Extract topic not just for articles, but also for videos
   let topicToSearch: string | undefined = undefined;
-  if (preIntent.is_topic_article_query) {
+  if (preIntent.is_topic_article_query || isVideoOrInterviewQuery) {
     topicToSearch = lastMessage
-      .replace(/\b(give me|show me|find|search for|what are|what is|what has|geostrata|the geostrata|published|written|articles?|publications?|posts?|reports?|about|on|regarding|can you|please|some)\b/gi, '')
+      .replace(/\b(give me|show me|find|search for|what are|what is|what has|geostrata|the geostrata|published|written|articles?|publications?|posts?|reports?|videos?|youtube|interviews?|watch|about|on|regarding|can you|please|some)\b/gi, '')
       .replace(/[^a-zA-Z0-9 -]/g, '')
       .trim();
     
-    if (!topicToSearch) topicToSearch = undefined; 
+    if (!topicToSearch || topicToSearch.length < 2) topicToSearch = undefined; 
   }
 
-  // FIX: Detect if the user is explicitly asking for videos
-  const isVideoQuery = /video|youtube|interview|watch/i.test(lastMessage);
-
-  const [intentResult, articlesResult, currentEventResult] = await Promise.allSettled([
+  // Fetch all parallel sources: Supabase Intent, Site Articles, Current Events, AND Live YouTube Videos
+  const [intentResult, articlesResult, currentEventResult, liveVideosResult] = await Promise.allSettled([
     classifyIntent(lastMessage, recentHistory),
     shouldFetchArticles ? fetchLatestArticles(topicToSearch) : Promise.resolve([] as Article[]),
     shouldFetchCurrentEvent ? fetchCurrentEventInfo(lastMessage) : Promise.resolve(''),
+    isVideoOrInterviewQuery ? fetchYouTubeVideos(topicToSearch) : Promise.resolve([] as Article[])
   ]);
 
   let intent: Intent;
@@ -701,6 +708,7 @@ export async function POST(req: Request) {
       database_queries: [lastMessage],
       is_social_handle_query: preIntent.is_social_handle_query ?? false,
       is_founder_query: preIntent.is_founder_query ?? false,
+      is_partnership_query: preIntent.is_partnership_query ?? false,
       is_sovereignty_query: preIntent.is_sovereignty_query ?? false,
       is_article_query: preIntent.is_article_query ?? false,
       is_topic_article_query: preIntent.is_topic_article_query ?? false,
@@ -709,19 +717,17 @@ export async function POST(req: Request) {
     };
   }
 
-  // FIX: Forcefully inject exact keyword queries for the vector database outside the LLM's control
   let finalQueries = [...intent.database_queries];
-  if (isVideoQuery) {
-    // Strip fluff dynamically
+  if (isVideoOrInterviewQuery) {
     const cleanTopic = lastMessage.replace(/can you show me|give me|find|search for|a video|an interview|published by|geostrata|discussing|about|on/gi, '').trim();
     if (cleanTopic.length > 2) {
+      finalQueries.push(`${cleanTopic}`);
+      finalQueries.push(`${cleanTopic} interview`);
       finalQueries.push(`${cleanTopic} youtube video`);
     }
-    // Final brute-force fallback to just grab whatever videos are in the DB
     finalQueries.push(`youtube video interview official geostrata`);
   }
   
-  // Deduplicate queries
   finalQueries = Array.from(new Set(finalQueries));
 
   let vectorDocs: SupabaseDoc[] = [];
@@ -731,12 +737,16 @@ export async function POST(req: Request) {
     } catch { /* skip */ }
   }
 
+  // Combine fetched articles and live videos into a single pipeline
   const articles = articlesResult.status === 'fulfilled' ? articlesResult.value : [];
+  const liveVideos = liveVideosResult.status === 'fulfilled' ? liveVideosResult.value : [];
+  const allLiveSources = [...articles, ...liveVideos];
+  
   const currentEventContext = currentEventResult.status === 'fulfilled' ? currentEventResult.value : '';
 
   const systemPrompt = buildSystemPrompt(
     buildInternalContext(vectorDocs),
-    buildArticleContext(articles),
+    buildLiveContext(allLiveSources),
     currentEventContext,
     intent,
     currentDate
@@ -767,7 +777,7 @@ export async function POST(req: Request) {
             user_query: lastMessage,
             ai_response: completion,
             optimized_queries: finalQueries.join(' | '),
-            source_count: vectorDocs.length + articles.length,
+            source_count: vectorDocs.length + allLiveSources.length,
           });
 
           if (userId && conversationId) {
