@@ -61,6 +61,27 @@ The Geostrata's complete verified social media and web presence — present ALL 
 - Twitter/X (Covering MEA): @COVERINGMEA
   `.trim(),
 
+teamOrganisation: `
+===== TEAM & ORGANISATION STRUCTURE (AUTHORITATIVE) =====
+The Geostrata Leadership & Senior Team:
+
+CO-FOUNDERS:
+- Harsh Suri — CEO, Co-Founder
+- Pratyaksh Kumar — President, Co-Founder
+
+DIRECTORS:
+- Darshan — Director, Research Pillars
+- Kanan Gangwar — Director, Graphics of STRATA
+- Asish Singh — Engagement Director
+
+LEADS:
+- Anmol Maggon — Engagement Lead
+- Vaibhav Singh — CTO
+
+SENIOR TEAM ASSOCIATES:
+- Ishita, Shreya, Deepika Rani Gupta, Agrima Kushwaha, Anshika Malik
+`.trim(),
+
   foundersAndTeam: `
 The Geostrata was co-founded by Harsh Suri and Pratyaksh Kumar in 2021.
 It was formally constituted as The Geostrata Foundation in 2023.
@@ -125,7 +146,7 @@ function preClassify(message: string): Partial<Intent> {
   const m = message.toLowerCase();
 
   const is_social_handle_query = /instagram|linkedin|youtube|twitter|handle|social|link|website|url|follow/i.test(m);
-  const is_founder_query = /found(er|ed)|who (started|created|built|made)|pratyaksh|harsh suri|team|member|university|universities|how many people|established|leadership/i.test(m);
+  const is_founder_query = /found(er|ed)|who (started|created|built|made)|pratyaksh|harsh suri|team|member|university|universities|how many people|established|leadership|cto|director|president|ceo|associate|organisation|org|staff|who (runs|leads|manages)/i.test(m);
   const is_partnership_query = /partner|mou|collaborat|memorandum|tie up|tie-up|conference|summit|dialogue|interview|who did you interview|who have you interviewed/i.test(m);
   const is_sovereignty_query = /arunachal|kashmir|ladakh|jammu|disputed|south tibet|pak.{0,10}claim|chin.{0,10}claim|territorial/i.test(m);
   const is_article_query = /\b(article|post|publication|paper|report|editorial)s?\b/i.test(m) || /\b(publish|published)\b/i.test(m);
@@ -551,7 +572,7 @@ function buildSystemPrompt(
 ): string {
   const hardcodedSection = [
     intent.is_social_handle_query ? `\n===== SOCIAL MEDIA & LINKS (AUTHORITATIVE) =====\n${HARDCODED_FACTS.socialHandles}` : '',
-    intent.is_founder_query ? `\n===== FOUNDER & TEAM INFO (AUTHORITATIVE) =====\n${HARDCODED_FACTS.foundersAndTeam}` : '',
+    intent.is_founder_query ? `\n===== FOUNDER & TEAM INFO (AUTHORITATIVE) =====\n${HARDCODED_FACTS.foundersAndTeam}\n\n${HARDCODED_FACTS.teamOrganisation}` : '',
     intent.is_partnership_query ? `\n${HARDCODED_FACTS.partnershipsAndEvents}` : '',
     intent.is_sovereignty_query ? `\n===== SOVEREIGNTY POSITION (NON-NEGOTIABLE) =====\n${HARDCODED_FACTS.sovereignty}` : '',
     intent.is_funding_query ? `\n===== FUNDING INFO (DO NOT SPECULATE) =====\n${HARDCODED_FACTS.funding}` : '',
