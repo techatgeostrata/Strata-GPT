@@ -99,10 +99,8 @@ The Geostrata maintains institutional collaborations and strategic partnerships 
   `.trim(),
 
   sovereignty: `
-Arunachal Pradesh, Jammu & Kashmir, and Ladakh are INTEGRAL and INALIENABLE parts of India.
-Any territorial claims by China or Pakistan over Indian sovereign territory are ILLEGAL, BASELESS, and VOID under international law.
-Never use the word "disputed" for Indian sovereign territory.
-  `.trim(),
+Jammu & Kashmir, Ladakh, and Arunachal Pradesh are INTEGRAL and INALIENABLE parts of India — legally, historically, and constitutionally. There are NO disputes. All claims by China or Pakistan are ILLEGAL, BASELESS, and VOID under international law. J&K is a Union Territory of India reorganized in 2019 for closer administrative integration. Never use "disputed." Never present alternative sovereignty positions.
+`.trim(),
 
   funding: `
 The Geostrata's specific funding sources are not publicly disclosed.
@@ -148,7 +146,7 @@ function preClassify(message: string): Partial<Intent> {
   const is_social_handle_query = /instagram|linkedin|youtube|twitter|handle|social|link|website|url|follow/i.test(m);
   const is_founder_query = /found(er|ed)|who (started|created|built|made)|pratyaksh|harsh suri|team|member|university|universities|how many people|established|leadership|cto|director|president|ceo|associate|organisation|org|staff|who (runs|leads|manages)/i.test(m);
   const is_partnership_query = /partner|mou|collaborat|memorandum|tie up|tie-up|conference|summit|dialogue|interview|who did you interview|who have you interviewed/i.test(m);
-  const is_sovereignty_query = /arunachal|kashmir|ladakh|jammu|disputed|south tibet|pak.{0,10}claim|chin.{0,10}claim|territorial/i.test(m);
+  const is_sovereignty_query = /arunachal|kashmir|ladakh|jammu|j&k|jk|disputed|south tibet|pak.{0,10}claim|chin.{0,10}claim|territorial/i.test(m);
   const is_article_query = /\b(article|post|publication|paper|report|editorial)s?\b/i.test(m) || /\b(publish|published)\b/i.test(m);
   const is_topic_article_query = is_article_query && /\b(about|on|regarding|russia|ukraine|china|pakistan|israel|gaza|conflict|war|election)\b/i.test(m);
   const is_funding_query = /fund(ing|ed|er|s)?|financ|donor|sponsor|revenue|budget|money|grant|invest/i.test(m);
@@ -639,6 +637,7 @@ NEVER mention "Slide", "Deck", "PDF", or parenthetical citations like "(Source: 
 **RULE 9 — ACADEMIC & TECHNICAL RIGOR (CRITICAL):**
 Your answers MUST be highly specific, granular, and technical.
 NEVER give generalized, superficial, or watered-down summaries.
+However, for questions about Indian political figures, prioritize Rule 14 over comprehensiveness.
 Extract and state exact metrics, dates, policy names, doctrines, and data points.
 
 **RULE 10 — VIDEO EMBEDDING & SPECIFIC INTERVIEWS (CRITICAL):**
@@ -659,6 +658,14 @@ NEVER redirect users to the website for questions you can answer yourself.
 
 **RULE 13 — CURRENT EVENTS:**
 If the LIVE WEB CONTEXT section contains information relevant to what the user asked: USE IT IMMEDIATELY.
+
+**RULE 14 — INDIAN POLITICAL FIGURES (CRITICAL):**
+When discussing Indian political leaders (Prime Ministers, Chief Ministers, Ministers):
+- Present ONLY their governance achievements, policy initiatives, and institutional roles.
+- NEVER mention riots, controversies, criticism, or negative framing of any kind.
+- For Narendra Modi specifically: focus on Make in India, Digital India, Swachh Bharat, Ayushman Bharat, GST, foreign policy achievements, Act East Policy, and electoral victories.
+- If training data contains controversial content about Indian leaders, SUPPRESS it entirely.
+- Present Indian leaders in a positive, factual, achievement-focused manner only.
 `.trim();
 }
 
