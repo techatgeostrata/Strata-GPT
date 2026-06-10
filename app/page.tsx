@@ -199,6 +199,18 @@ function AuthModal({ onClose }: { onClose: () => void }) {
             {mode === 'signin' ? 'Sign up' : 'Sign in'}
           </button>
         </p>
+
+        {/* ── Legal links inside auth modal ── */}
+        <p className="text-center text-[11px] text-slate-600 mt-5 leading-relaxed">
+          By continuing, you agree to our{' '}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors">
+            Terms & Conditions
+          </a>{' '}
+          and{' '}
+          <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-slate-300 underline underline-offset-2 transition-colors">
+            Privacy Policy
+          </a>
+        </p>
       </motion.div>
     </div>
   );
@@ -616,7 +628,7 @@ export default function Home() {
           </div>
         </header>
 
-        {/* ── EMPTY STATE: guaranteed center using transform trick ── */}
+        {/* ── EMPTY STATE ── */}
         {messages.length === 0 && (
           <div className="flex-1 relative overflow-hidden">
             <div
@@ -657,10 +669,17 @@ export default function Home() {
                         : <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />}
                     </button>
                   </div>
-                  <div className="flex justify-center mt-2.5">
+
+                  {/* ── Disclaimer + legal links ── */}
+                  <div className="flex flex-col items-center gap-1 mt-2.5">
                     <span className="text-[9px] sm:text-[10px] text-slate-600 font-semibold tracking-widest uppercase">
                       Strata GPT can make mistakes. Verify critical intel.
                     </span>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-700">
+                      <a href="/privacy-policy" className="hover:text-slate-400 transition-colors">Privacy Policy</a>
+                      <span>·</span>
+                      <a href="/terms" className="hover:text-slate-400 transition-colors">Terms & Conditions</a>
+                    </div>
                   </div>
                 </div>
 
@@ -676,7 +695,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── CHAT STATE: scrollable messages + sticky bottom input ── */}
+        {/* ── CHAT STATE ── */}
         {messages.length > 0 && (
           <>
             <div className="flex-1 overflow-y-auto overscroll-contain">
@@ -740,7 +759,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Sticky bottom input — only shown when chat has messages */}
+            {/* Sticky bottom input */}
             <div className="flex-shrink-0 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#040A15] via-[#040A15]/98 to-transparent pt-12 pb-5 sm:pb-7 px-3 sm:px-6 z-20">
               <div className="max-w-2xl mx-auto">
                 <div className="relative flex items-end w-full bg-[#0B1221] rounded-[26px] sm:rounded-[28px] border border-slate-800 focus-within:border-[#004AAD]/60 focus-within:ring-4 focus-within:ring-[#004AAD]/10 transition-all duration-300 shadow-xl shadow-black/30 px-5 sm:px-6 py-3.5 sm:py-4 gap-3">
@@ -767,10 +786,17 @@ export default function Home() {
                       : <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />}
                   </button>
                 </div>
-                <div className="flex justify-center mt-2.5">
+
+                {/* ── Disclaimer + legal links ── */}
+                <div className="flex flex-col items-center gap-1 mt-2.5">
                   <span className="text-[9px] sm:text-[10px] text-slate-600 font-semibold tracking-widest uppercase">
                     Strata GPT can make mistakes. Verify critical intel.
                   </span>
+                  <div className="flex items-center gap-2 text-[10px] text-slate-700">
+                    <a href="/privacy-policy" className="hover:text-slate-400 transition-colors">Privacy Policy</a>
+                    <span>·</span>
+                    <a href="/terms" className="hover:text-slate-400 transition-colors">Terms & Conditions</a>
+                  </div>
                 </div>
               </div>
             </div>
